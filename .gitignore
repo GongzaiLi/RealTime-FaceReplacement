@@ -39,7 +39,7 @@ nosetests.xml
 .pydevproject
 
 # env
-.facereplacement-env/
+**/facereplacement-env/
 
 # IDE
 .idea/
