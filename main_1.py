@@ -3,8 +3,6 @@
 import cv2
 import dlib
 import numpy as np
-import imutils
-from imutils import face_utils
 
 
 def is_out_of_image(rects, img_wight, img_height):
@@ -47,50 +45,50 @@ def rectContains(rect, point):
         return False
     return True
 
+def extract_index_nparray(nparray):
+    index = None
+    for num in nparray[0]:
+        index = num
+        break
+    return index
 
 def calculateDelaunayTriangles(rect, points):
     # create subdiv
     sub_div = cv2.Subdiv2D(rect)
 
-    print(type(sub_div), "33333333333333333333333333333333333333333333333333")
     # todo need check Insert points into subdiv
     # for point in points:
     #     sub_div.insert(point)
-    for p in points:
-        sub_div.insert(p)
-
-    print(sub_div, "44444444444444444444444444444444444444444444444")
+    sub_div.insert(points)
 
     # todo check the function is right
     triangleList = sub_div.getTriangleList()
+    triangleList = np.array(triangleList, dtype=np.int32)
+    np_points = np.array(points, np.int32)
 
     delaunayTri = []
-    pt = []
 
-    count = 0
 
     # todo I do not understand why did that
     for t in triangleList:
-
-        pt.append((t[0], t[1]))
-        pt.append((t[2], t[3]))
-        pt.append((t[4], t[5]))
 
         pt1 = (t[0], t[1])
         pt2 = (t[2], t[3])
         pt3 = (t[4], t[5])
 
-        # todo update
-        if rectContains(rect, pt1) and rectContains(rect, pt2) and rectContains(rect, pt3):
-            count += 1
-            ind = []  # todo check it
-            for j in range(0, 3):
-                for k in range(0, len(points)):
-                    if abs(pt[j][0] - points[k][0]) < 1.0 and abs(pt[j][1] - points[k][1]) < 1.0:
-                        ind.append(k)
-            if len(ind) == 3:
-                delaunayTri.append((ind[0], ind[1], ind[2]))
-        pt = []
+        index_pt1 = np.where((np_points == pt1).all(axis=1))
+        index_pt1 = extract_index_nparray(index_pt1)
+
+        index_pt2 = np.where((np_points == pt2).all(axis=1))
+        index_pt2 = extract_index_nparray(index_pt2)
+
+        index_pt3 = np.where((np_points == pt3).all(axis=1))
+        index_pt3 = extract_index_nparray(index_pt3)
+
+        if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
+            triangle = [index_pt1, index_pt2, index_pt3]
+            delaunayTri.append(triangle)
+    print(len(points), len(triangleList), len(delaunayTri))
     return delaunayTri
 
 
@@ -131,6 +129,16 @@ def warpTriangle(img1, img2, t1, t2):
     img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] + img2Rect
 
 
+def get_landmark_points(shape):
+
+    landmarks_points = []
+    for n in range(0, 68):
+        x = shape.part(n).x
+        y = shape.part(n).y
+        landmarks_points.append((x, y))
+    return landmarks_points
+
+
 def face_swap3(img_ref, detector, predictor):
     # color set
     gray1 = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
@@ -150,7 +158,8 @@ def face_swap3(img_ref, detector, predictor):
     shape1 = predictor(gray1, rects1[0])
 
     # todo check the face_utils shape_to_np
-    points1 = face_utils.shape_to_np(shape1)  # type is an array of arrays
+    # points1 = face_utils.shape_to_np(shape1)  # type is an array of arrays
+    points1 = get_landmark_points(shape1)
 
     if is_out_of_image_points(points1, gray1.shape[1], gray1.shape[0]):
         return None
@@ -161,13 +170,13 @@ def face_swap3(img_ref, detector, predictor):
 
     # todo face 2
     shape2 = predictor(gray1, rects1[1])
-    points2 = face_utils.shape_to_np(shape2)
+    # points2 = face_utils.shape_to_np(shape2)
+    points2 = get_landmark_points(shape2)
 
     if is_out_of_image_points(points2, gray1.shape[1], gray1.shape[0]):  # check if points are inside the image
         return None
 
     points2 = list(map(tuple, points2))
-
 
     # todo Find convex hull
     hull1 = []
@@ -185,12 +194,15 @@ def face_swap3(img_ref, detector, predictor):
     rect = (0, 0, sizeImg2[1], sizeImg2[0])
 
     # todo new staff
-    delaunayTri = calculateDelaunayTriangles(rect, hull2)
+    delaunayTri = calculateDelaunayTriangles(rect, hull2) # todo 18, 20, 20
 
     if len(delaunayTri) == 0:
         return None
 
     # todo Apply affine transformation to Delaunay triangles
+
+    print(len(delaunayTri), 1111)
+
     for i in range(0, len(delaunayTri)):
         t1 = []
         t2 = []
@@ -270,7 +282,6 @@ if __name__ == '__main__':
 
     detector = dlib.get_frontal_face_detector()
 
-
     predictor = dlib.shape_predictor(model)
 
     # cam
@@ -295,7 +306,7 @@ if __name__ == '__main__':
             break
 
     # Release the camera device and close the GUI.
-    #output = face_swap3(img, detector, predictor)
-    #cv2.imwrite('lol3.jpg',output)
+    # output = face_swap3(img, detector, predictor)
+    # cv2.imwrite('lol3.jpg',output)
     video_capture.release()
     cv2.destroyAllWindows()

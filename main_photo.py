@@ -82,6 +82,8 @@ if __name__ == '__main__':
         index_triangles = []  # part 3
 
         # t [269. 421. 477. 435. 462. 486.] [p1,x, p1.y, p2.x, p2.y, p3.x, p3.y]
+
+
         for t in triangles:
             pt1 = (t[0], t[1])
             pt2 = (t[2], t[3])
@@ -115,6 +117,7 @@ if __name__ == '__main__':
                 triangle = [index_pt1, index_pt2, index_pt3]
                 # add to triangle
                 index_triangles.append(triangle)
+        print(len(points), len(index_triangles), len(triangles))
 
     # face 2
     faces2 = detector(img2_gray)
@@ -136,8 +139,11 @@ if __name__ == '__main__':
     # Delaunay Triangulation of the second face, from the first face delaunay triangulation
     lines_space_mask = np.zeros_like(img1_gray)
     lines_space_new_face = np.zeros_like(img2)
+    print(len(index_triangles), 1111111)
+    print(landmarks_points, 222222222222)
     for triangle_index in index_triangles:
         # Triangulation of the first face
+
         tr1_pt1 = landmarks_points[triangle_index[0]]
         tr1_pt2 = landmarks_points[triangle_index[1]]
         tr1_pt3 = landmarks_points[triangle_index[2]]
