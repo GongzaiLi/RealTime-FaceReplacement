@@ -36,6 +36,8 @@ def face_swap3(img_ref, detector, predictor):
 
     img1Warped = np.copy(img_ref)
 
+    # todo face 1
+
     shape1 = predictor(gray1, rects1[0])
 
     # todo check the face_utils shape_to_np
@@ -47,6 +49,21 @@ def face_swap3(img_ref, detector, predictor):
     # need to covert to a list of tuple
     # map in python3 is return an iterable || map in python2 is return a list
     points1 = list(map(tuple, points1))
+
+    # todo face 2
+    shape2 = predictor(gray1, rects1[1])
+    points2 = face_utils.shape_to_np(shape2)
+
+    if is_out_of_image_points(points2, gray1.shape[1], gray1.shape[0]):  # check if points are inside the image
+        return None
+
+    points2 = list(map(tuple, points2))
+
+    # Find convex hull
+    hull1 = []
+    hull2 = []
+
+    hullIndex = cv2.convexHull(np.array(points2), returnPoints = False)
 
 if __name__ == '__main__':
     # version check
