@@ -7,6 +7,7 @@ then
     python -m pip install --upgrade pip
     python -m pip install opencv-contrib-python==4.5.5.62
     python -m pip install opencv-python
+    python -m pip install imutils
     python -m pip install -r requirements.txt
 else
     source "facereplacement-env/bin/activate"
