@@ -14,7 +14,7 @@ def extract_index_nparray(nparray):
 
 img = cv2.imread("imgs/test1.jpg")
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-mask = np.zeros_like(img_gray)
+mask = np.zeros_like(img_gray) # todo ???
 img2 = cv2.imread("imgs/test2.jpg")
 img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
@@ -40,11 +40,13 @@ for face in faces:
 
 
     points = np.array(landmarks_points, np.int32)
+
+
     convexhull = cv2.convexHull(points)
     # cv2.polylines(img, [convexhull], True, (255, 0, 0), 3)
-    cv2.fillConvexPoly(mask, convexhull, 255)
+    cv2.fillConvexPoly(mask, convexhull, 255) # todo
 
-    face_image_1 = cv2.bitwise_and(img, img, mask=mask)
+    face_image_1 = cv2.bitwise_and(img, img, mask=mask) # todo
 
     # Delaunay triangulation
     rect = cv2.boundingRect(convexhull)
@@ -92,6 +94,8 @@ for face in faces2:
 lines_space_mask = np.zeros_like(img_gray)
 lines_space_new_face = np.zeros_like(img2)
 # Triangulation of both faces
+
+
 for triangle_index in indexes_triangles:
     # Triangulation of the first face
     tr1_pt1 = landmarks_points[triangle_index[0]]

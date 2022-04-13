@@ -45,12 +45,14 @@ def rectContains(rect, point):
         return False
     return True
 
+
 def extract_index_nparray(nparray):
     index = None
     for num in nparray[0]:
         index = num
         break
     return index
+
 
 def calculateDelaunayTriangles(rect, points):
     # create subdiv
@@ -111,6 +113,7 @@ def warpTriangle(img1, img2, t1, t2):
 
     # Get mask by filling triangle
     mask = np.zeros((r2[3], r2[2], 3), dtype=np.float32)
+    cv2.fillConvexPoly(mask, np.int32(t2RectInt), (1.0, 1.0, 1.0), 16, 0);
 
     # Apply warpImage to small rectangular patches
     img1Rect = img1[r1[1]:r1[1] + r1[3], r1[0]:r1[0] + r1[2]]
@@ -118,11 +121,10 @@ def warpTriangle(img1, img2, t1, t2):
 
     size = (r2[2], r2[3])
 
-    img2Rect = applyAffineTransform(img1, t1Rect, t2Rect, size)
+    img2Rect = applyAffineTransform(img1Rect, t1Rect, t2Rect, size)
 
     img2Rect = img2Rect * mask
 
-    # todo  Copy triangular region of the rectangular patch to the output image ???????????????????????? because is numpy
     img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] * (
             (1.0, 1.0, 1.0) - mask)
 
@@ -130,7 +132,6 @@ def warpTriangle(img1, img2, t1, t2):
 
 
 def get_landmark_points(shape):
-
     landmarks_points = []
     for n in range(0, 68):
         x = shape.part(n).x
@@ -143,47 +144,46 @@ def face_swap3(img_ref, detector, predictor):
     # color set
     gray1 = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
     # detect faces in the grayscale frame
-    rects1 = detector(gray1, 0)
+    faces = detector(gray1, 0)
 
-    if len(rects1) < 2:
+    if len(faces) < 2:
         return None
 
-    if is_out_of_image(rects1, gray1.shape[1], gray1.shape[0]):
+    if is_out_of_image(faces, gray1.shape[1], gray1.shape[0]):
         return None
 
-    img1Warped = np.copy(img_ref)
+    img1Warped = np.copy(img_ref)  # todo ===================
 
-    # todo face 1
+    # face 1
+    shape1 = predictor(gray1, faces[0])
 
-    shape1 = predictor(gray1, rects1[0])
-
-    # todo check the face_utils shape_to_np
     # points1 = face_utils.shape_to_np(shape1)  # type is an array of arrays
-    points1 = get_landmark_points(shape1)
+    landmarks_1_points = get_landmark_points(shape1)
 
-    if is_out_of_image_points(points1, gray1.shape[1], gray1.shape[0]):
+    if is_out_of_image_points(landmarks_1_points, gray1.shape[1], gray1.shape[0]):
         return None
 
     # need to covert to a list of tuple
     # map in python3 is return an iterable || map in python2 is return a list
-    points1 = list(map(tuple, points1))
+    points1 = list(map(tuple, landmarks_1_points))
+    # points1 = np.array(landmarks_1_points, np.int32)
 
-    # todo face 2
-    shape2 = predictor(gray1, rects1[1])
+    # face 2
+    shape2 = predictor(gray1, faces[1])
     # points2 = face_utils.shape_to_np(shape2)
-    points2 = get_landmark_points(shape2)
+    landmarks_2_points = get_landmark_points(shape2)
 
-    if is_out_of_image_points(points2, gray1.shape[1], gray1.shape[0]):  # check if points are inside the image
+    if is_out_of_image_points(landmarks_2_points, gray1.shape[1],
+                              gray1.shape[0]):  # check if points are inside the image
         return None
 
-    points2 = list(map(tuple, points2))
+    points2 = list(map(tuple, landmarks_2_points))
 
-    # todo Find convex hull
+    # hull done
     hull1 = []
     hull2 = []
 
     hullIndex = cv2.convexHull(np.array(points2, np.int32), returnPoints=False)
-
     for i in range(0, len(hullIndex)):
         hull1.append(points1[int(hullIndex[i])])
         hull2.append(points2[int(hullIndex[i])])
@@ -194,23 +194,25 @@ def face_swap3(img_ref, detector, predictor):
     rect = (0, 0, sizeImg2[1], sizeImg2[0])
 
     # todo new staff
-    delaunayTri = calculateDelaunayTriangles(rect, hull2) # todo 18, 20, 20
+
+
+    delaunayTri = calculateDelaunayTriangles(rect, hull2)
 
     if len(delaunayTri) == 0:
         return None
 
     # todo Apply affine transformation to Delaunay triangles
 
-    print(len(delaunayTri), 1111)
+
 
     for i in range(0, len(delaunayTri)):
         t1 = []
         t2 = []
 
-        # get points for img1, img2 corresponding to the triangles
+        # get points for img1, img2 corresponding to the triangles todo------------------------------------
         for j in range(0, 3):
-            t1.append(hull1[i][j])
-            t2.append(hull2[i][j])
+            t1.append(hull1[delaunayTri[i][j]])
+            t2.append(hull2[delaunayTri[i][j]])
 
         # warp Triangle
         warpTriangle(img_ref, img1Warped, t1, t2)
@@ -247,8 +249,8 @@ def face_swap3(img_ref, detector, predictor):
 
         # get points for img1, img2 corresponding to the triangles
         for j in range(0, 3):
-            t1.append(hull1[i][j])
-            t2.append(hull2[i][j])
+            t1.append(hull2[delaunayTri[i][j]])
+            t2.append(hull1[delaunayTri[i][j]])
 
         # warp Triangle
         warpTriangle(img_ref, img1Warped, t1, t2)
@@ -273,9 +275,6 @@ def face_swap3(img_ref, detector, predictor):
 
 
 if __name__ == '__main__':
-    # version check
-    # a = cv2.__version__
-    # print(a)
 
     # Take face mode
     model = "shape_predictor_68_face_landmarks.dat"
@@ -297,7 +296,8 @@ if __name__ == '__main__':
         ret, img = video_capture.read()  # Read an image from the frame.
 
         output = face_swap3(img, detector, predictor)
-        if (output != None):
+
+        if output is not None:
             cv2.imshow("Face Swapped", output)
         else:
             cv2.imshow("Face Swapped", img)
@@ -308,5 +308,6 @@ if __name__ == '__main__':
     # Release the camera device and close the GUI.
     # output = face_swap3(img, detector, predictor)
     # cv2.imwrite('lol3.jpg',output)
-    video_capture.release()
     cv2.destroyAllWindows()
+    video_capture.release()
+
