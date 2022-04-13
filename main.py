@@ -132,7 +132,7 @@ def warpTriangle(img1, img2, t1, t2):
 
 def get_landmark_points(shape):
     landmarks_points = []
-    for n in range(0, 68):
+    for n in range(0, 81):
         x = shape.part(n).x
         y = shape.part(n).y
         landmarks_points.append((x, y))
@@ -276,20 +276,15 @@ def face_swap3(img_ref, detector, predictor):
 if __name__ == '__main__':
 
     # Take face mode
-    model = "models/shape_predictor_68_face_landmarks.dat"
+    model = "models/shape_predictor_81_face_landmarks.dat"
 
     detector = dlib.get_frontal_face_detector()
 
     predictor = dlib.shape_predictor(model)
 
-    # cam
     video_path = -1  # if 0 not work go -1
     video_capture = cv2.VideoCapture(video_path)  # Open the first camera connected to the computer.
 
-    # ret, img = video_capture.read()
-    # cv2.imshow("Face Swapped", img)
-    # img = cv2.imread('ji2.jpg')
-    # img2 = cv2.imread('donald_trump.jpg')
 
     while True:
         ret, img = video_capture.read()  # Read an image from the frame.
@@ -304,9 +299,6 @@ if __name__ == '__main__':
         if cv2.waitKey(1) & 0xFF == ord('q'):  # Close the script when q is pressed.
             break
 
-    # Release the camera device and close the GUI.
-    # output = face_swap3(img, detector, predictor)
-    # cv2.imwrite('lol3.jpg',output)
     cv2.destroyAllWindows()
     video_capture.release()
 
