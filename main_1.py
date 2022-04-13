@@ -22,6 +22,10 @@ def is_out_of_image_points(points, img_wight, img_height):
     return False
 
 
+def calculateDelaunayTriangles(rect, points):
+
+    subdiv = cv2.Subdiv2D(rect);
+
 def face_swap3(img_ref, detector, predictor):
     # color set
     gray1 = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
@@ -59,11 +63,26 @@ def face_swap3(img_ref, detector, predictor):
 
     points2 = list(map(tuple, points2))
 
-    # Find convex hull
+    # todo Find convex hull
     hull1 = []
     hull2 = []
 
-    hullIndex = cv2.convexHull(np.array(points2), returnPoints = False)
+    hullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
+
+    for index in  range(0, len(hullIndex)):
+        hull1.append(points1[int(hullIndex[index])])
+        hull2.append(points2[int(hullIndex[index])])
+
+    # Find delanauy traingulation for convex hull points
+    sizeImg2 = img_ref.shape
+    #               height      weight
+    rect = (0, 0, sizeImg2[1], sizeImg2[0])
+
+    dt =
+
+
+
+
 
 if __name__ == '__main__':
     # version check
