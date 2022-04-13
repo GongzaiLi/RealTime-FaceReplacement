@@ -24,7 +24,30 @@ def is_out_of_image_points(points, img_wight, img_height):
 
 def calculateDelaunayTriangles(rect, points):
 
-    subdiv = cv2.Subdiv2D(rect);
+    # create subdiv
+    subdiv = cv2.Subdiv2D(rect)
+
+    # todo need check Insert points into subdiv
+    for point in points:
+        subdiv.insert(point)
+
+    # todo check the function is right
+    triangleList = subdiv.getTriangleList()
+
+    delaunayTri = []
+
+    pt = []
+
+    count = 0
+
+    # todo I do not understand why did that
+    for t in triangleList:
+
+        pt.append((t[0], t[1]))
+        pt.append((t[2], t[3]))
+        pt.append((t[4], t[5]))
+
+
 
 def face_swap3(img_ref, detector, predictor):
     # color set
