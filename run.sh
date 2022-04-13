@@ -13,4 +13,4 @@ else
     source "facereplacement-env/bin/activate"
 fi
 
-#python video_handler.py --src_img imgs/test7.jpg
+#python video_handler.py --src_img imgs/test2.jpg
