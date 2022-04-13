@@ -21,6 +21,18 @@ def is_out_of_image_points(points, img_wight, img_height):
             return True
     return False
 
+def rectContains(rect, point):
+    # Check if a point is inside a rectangle
+    if point[0] < rect[0]:
+        return False
+    elif point[1] < rect[1]:
+        return False
+    elif point[0] > rect[0] + rect[2]:
+        return False
+    elif point[1] > rect[1] + rect[3]:
+        return False
+    return True
+
 
 def calculateDelaunayTriangles(rect, points):
 
@@ -46,6 +58,8 @@ def calculateDelaunayTriangles(rect, points):
         pt.append((t[0], t[1]))
         pt.append((t[2], t[3]))
         pt.append((t[4], t[5]))
+
+
 
 
 
