@@ -90,7 +90,6 @@ def calculateDelaunayTriangles(rect, points):
         if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
             triangle = [index_pt1, index_pt2, index_pt3]
             delaunayTri.append(triangle)
-    print(len(points), len(triangleList), len(delaunayTri))
     return delaunayTri
 
 
@@ -277,7 +276,7 @@ def face_swap3(img_ref, detector, predictor):
 if __name__ == '__main__':
 
     # Take face mode
-    model = "shape_predictor_68_face_landmarks.dat"
+    model = "models/shape_predictor_68_face_landmarks.dat"
 
     detector = dlib.get_frontal_face_detector()
 
