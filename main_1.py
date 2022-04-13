@@ -10,7 +10,7 @@ from imutils import face_utils
 def is_out_of_image(rects, img_wight, img_height):
     for rect in rects:
         x, y, w, h = rect.left(), rect.top(), rect.width(), rect.height()
-        if x < 0 or y < 0 or (y + h) >= img_wight or (x + w) >= img_height:
+        if x < 0 or y < 0 or (y + h) >= img_height or (x + w) >= img_wight:
             return True
     return False
 
@@ -50,22 +50,28 @@ def rectContains(rect, point):
 
 def calculateDelaunayTriangles(rect, points):
     # create subdiv
-    subdiv = cv2.Subdiv2D(rect)
+    sub_div = cv2.Subdiv2D(rect)
 
+    print(type(sub_div), "33333333333333333333333333333333333333333333333333")
     # todo need check Insert points into subdiv
-    for point in points:
-        subdiv.insert(point)
+    # for point in points:
+    #     sub_div.insert(point)
+    for p in points:
+        sub_div.insert(p)
+
+    print(sub_div, "44444444444444444444444444444444444444444444444")
 
     # todo check the function is right
-    triangleList = subdiv.getTriangleList()
+    triangleList = sub_div.getTriangleList()
 
     delaunayTri = []
+    pt = []
 
     count = 0
 
     # todo I do not understand why did that
     for t in triangleList:
-        pt = []
+
         pt.append((t[0], t[1]))
         pt.append((t[2], t[3]))
         pt.append((t[4], t[5]))
@@ -84,6 +90,7 @@ def calculateDelaunayTriangles(rect, points):
                         ind.append(k)
             if len(ind) == 3:
                 delaunayTri.append((ind[0], ind[1], ind[2]))
+        pt = []
     return delaunayTri
 
 
@@ -132,6 +139,7 @@ def face_swap3(img_ref, detector, predictor):
 
     if len(rects1) < 2:
         return None
+
     if is_out_of_image(rects1, gray1.shape[1], gray1.shape[0]):
         return None
 
@@ -160,15 +168,16 @@ def face_swap3(img_ref, detector, predictor):
 
     points2 = list(map(tuple, points2))
 
+
     # todo Find convex hull
     hull1 = []
     hull2 = []
 
-    hullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
+    hullIndex = cv2.convexHull(np.array(points2, np.int32), returnPoints=False)
 
-    for index in range(0, len(hullIndex)):
-        hull1.append(points1[int(hullIndex[index])])
-        hull2.append(points2[int(hullIndex[index])])
+    for i in range(0, len(hullIndex)):
+        hull1.append(points1[int(hullIndex[i])])
+        hull2.append(points2[int(hullIndex[i])])
 
     # Find delanauy traingulation for convex hull points
     sizeImg2 = img_ref.shape
@@ -256,10 +265,12 @@ if __name__ == '__main__':
     # a = cv2.__version__
     # print(a)
 
+    # Take face mode
+    model = "shape_predictor_68_face_landmarks.dat"
+
     detector = dlib.get_frontal_face_detector()
 
-    # Take face mode
-    model = "models/shape_predictor_68_face_landmarks.dat"
+
     predictor = dlib.shape_predictor(model)
 
     # cam
@@ -284,5 +295,7 @@ if __name__ == '__main__':
             break
 
     # Release the camera device and close the GUI.
+    #output = face_swap3(img, detector, predictor)
+    #cv2.imwrite('lol3.jpg',output)
     video_capture.release()
     cv2.destroyAllWindows()
