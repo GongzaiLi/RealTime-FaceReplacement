@@ -21,6 +21,7 @@ def is_out_of_image_points(points, img_wight, img_height):
             return True
     return False
 
+
 def rectContains(rect, point):
     # Check if a point is inside a rectangle
     if point[0] < rect[0]:
@@ -35,7 +36,6 @@ def rectContains(rect, point):
 
 
 def calculateDelaunayTriangles(rect, points):
-
     # create subdiv
     subdiv = cv2.Subdiv2D(rect)
 
@@ -48,20 +48,30 @@ def calculateDelaunayTriangles(rect, points):
 
     delaunayTri = []
 
-    pt = []
-
     count = 0
 
     # todo I do not understand why did that
     for t in triangleList:
-
+        pt = []
         pt.append((t[0], t[1]))
         pt.append((t[2], t[3]))
         pt.append((t[4], t[5]))
 
+        pt1 = (t[0], t[1])
+        pt2 = (t[2], t[3])
+        pt3 = (t[4], t[5])
 
-
-
+        # todo update
+        if rectContains(rect, pt1) and rectContains(rect, pt2) and rectContains(rect, pt3):
+            count += 1
+            ind = []  # todo check it
+            for j in range(0, 3):
+                for k in range(0, len(points)):
+                    if abs(pt[j][0] - points[k][0]) < 1.0 and abs(pt[j][1] - points[k][1]) < 1.0:
+                        ind.append(k)
+            if len(ind) == 3:
+                delaunayTri.append((ind[0], ind[1], ind[2]))
+    return delaunayTri
 
 def face_swap3(img_ref, detector, predictor):
     # color set
@@ -106,7 +116,7 @@ def face_swap3(img_ref, detector, predictor):
 
     hullIndex = cv2.convexHull(np.array(points2), returnPoints=False)
 
-    for index in  range(0, len(hullIndex)):
+    for index in range(0, len(hullIndex)):
         hull1.append(points1[int(hullIndex[index])])
         hull2.append(points2[int(hullIndex[index])])
 
@@ -116,9 +126,6 @@ def face_swap3(img_ref, detector, predictor):
     rect = (0, 0, sizeImg2[1], sizeImg2[0])
 
     dt =
-
-
-
 
 
 if __name__ == '__main__':
