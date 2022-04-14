@@ -47,3 +47,17 @@ def warp_triangle(face1, face2, triangle1, triangle2):
             (1.0, 1.0, 1.0) - mask)
 
     face2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = face2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] + img2_rect
+
+
+def affine_transformation(hull1, hull2, delaunay_triangles, img_ref, img_warped):
+    # Apply affine transformation to Delaunay triangles
+    for i in range(0, len(delaunay_triangles)):
+        t1 = []
+        t2 = []
+        # get points for img1, img2 corresponding to the triangles
+        for j in range(0, 3):
+            t1.append(hull1[delaunay_triangles[i][j]])
+            t2.append(hull2[delaunay_triangles[i][j]])
+
+        # warp Triangle
+        warp_triangle(img_ref, img_warped, t1, t2)
