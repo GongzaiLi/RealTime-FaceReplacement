@@ -16,10 +16,10 @@ def extract_index_nparray(nparray):
 
 
 if __name__ == '__main__':
-    img1 = cv2.imread("imgs/test1.jpg")
+    img1 = cv2.imread("../imgs/test1.jpg")
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
-    img2 = cv2.imread("imgs/test2.jpg")
+    img2 = cv2.imread("../imgs/test2.jpg")
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
     # create a all zero matrix img_gray # create empty mask
