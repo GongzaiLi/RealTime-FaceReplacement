@@ -40,8 +40,9 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     if is_out_of_image(faces, gray1.shape[1], gray1.shape[0]):
         return None
 
-    img1_warped = np.copy(img_ref)  # todo ===================
+    img1_warped = np.copy(img_ref)
 
+    # todo refactor here 1 =================================================================================================
     # face 1
     shape1 = predictor(gray1, faces[0])
 
@@ -54,7 +55,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     # need to covert to a list of tuple
     # map in python3 is return an iterable || map in python2 is return a list
     points1 = list(map(tuple, landmarks_1_points))
-    # points1 = np.array(landmarks_1_points, np.int32)
+
 
     # face 2
     shape2 = predictor(gray1, faces[1])
@@ -66,6 +67,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
         return None
 
     points2 = list(map(tuple, landmarks_2_points))
+    # todo refactor here 1 =================================================================================================
 
     # hull done
     hull1 = []
@@ -81,15 +83,13 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     #               height      weight
     rect = (0, 0, sizeImg2[1], sizeImg2[0])
 
-    # todo new staff
-
     delaunayTri = calculate_delaunay_triangles(rect, hull2)
 
     if len(delaunayTri) == 0:
         return None
 
-    # todo Apply affine transformation to Delaunay triangles
 
+    # todo refactor here 2 =================================================================================================
     for i in range(0, len(delaunayTri)):
         t1 = []
         t2 = []
@@ -101,6 +101,8 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
         # warp Triangle
         warp_triangle(img_ref, img1_warped, t1, t2)
+
+
 
     # Calculate Mask
     hull8U = []
@@ -119,15 +121,19 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
     # Clone seamlessly.
     output = cv2.seamlessClone(np.uint8(img1_warped), img_ref, mask, center, cv2.NORMAL_CLONE)
+    # todo refactor here 2 =================================================================================================
 
-    # todo =================================================== refactor
-    img1Warped = np.copy(img_ref)
+
+    img1_warped = np.copy(img_ref)
     delaunayTri = calculate_delaunay_triangles(rect, hull1)
+
+
 
     if len(delaunayTri) == 0:
         return None
 
-    # todo Apply affine transformation to Delaunay triangles
+
+    # todo refactor here 2 =================================================================================================
     for i in range(0, len(delaunayTri)):
         t1 = []
         t2 = []
@@ -138,7 +144,10 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
             t2.append(hull1[delaunayTri[i][j]])
 
         # warp Triangle
-        warp_triangle(img_ref, img1Warped, t1, t2)
+        warp_triangle(img_ref, img1_warped, t1, t2)
+
+
+
 
     # Calculate Mask
     hull8U = []
@@ -154,6 +163,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
 
     # Clone seamlessly.
-    output = cv2.seamlessClone(np.uint8(img1Warped), output, mask, center, cv2.NORMAL_CLONE)
+    output = cv2.seamlessClone(np.uint8(img1_warped), output, mask, center, cv2.NORMAL_CLONE)
+    # todo refactor here 2 =================================================================================================
 
     return output
