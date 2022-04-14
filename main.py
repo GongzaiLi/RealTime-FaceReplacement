@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import cv2
 import dlib
-from face_swap import face_swap
+from unils.face_swap import face_swap
 
 
 def pick_face_landmark_number():

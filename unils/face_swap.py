@@ -1,7 +1,7 @@
-#! /usr/bin/env python
 import cv2
-
 import numpy as np
+from unils.delaunay_triangulation import calculate_delaunay_triangles
+from unils.warp_trianglation import warp_triangle
 
 
 def is_out_of_image(rects, img_wight, img_height):
@@ -19,19 +19,6 @@ def is_out_of_image_points(points, img_wight, img_height):
     return False
 
 
-# Apply affine transform calculated using srcTri and dstTri to src and
-# todo output an image of size.
-def applyAffineTransform(src, srcTri, dstTri, size):
-    # Given a pair of triangles, find the affine transform.
-    waroMat = cv2.getAffineTransform(np.float32(srcTri), np.float32(dstTri))
-
-    # Apply the Affine Transform just found to the src image https://docs.opencv.org/3.4/d4/d61/tutorial_warp_affine.html
-    dst = cv2.warpAffine(src, waroMat, (size[0], size[1]), None, flags=cv2.INTER_LINEAR,
-                         borderMode=cv2.BORDER_REFLECT_101)
-
-    return dst
-
-
 def rectContains(rect, point):
     # Check if a point is inside a rectangle
     if point[0] < rect[0]:
@@ -43,89 +30,6 @@ def rectContains(rect, point):
     elif point[1] > rect[1] + rect[3]:
         return False
     return True
-
-
-def extract_index_nparray(nparray):
-    index = None
-    for num in nparray[0]:
-        index = num
-        break
-    return index
-
-
-def calculateDelaunayTriangles(rect, points):
-    # create subdiv
-    sub_div = cv2.Subdiv2D(rect)
-
-    # todo need check Insert points into subdiv
-    # for point in points:
-    #     sub_div.insert(point)
-    sub_div.insert(points)
-
-    # todo check the function is right
-    triangleList = sub_div.getTriangleList()
-    triangleList = np.array(triangleList, dtype=np.int32)
-    np_points = np.array(points, np.int32)
-
-    delaunayTri = []
-
-    # todo I do not understand why did that
-    for t in triangleList:
-
-        pt1 = (t[0], t[1])
-        pt2 = (t[2], t[3])
-        pt3 = (t[4], t[5])
-
-        index_pt1 = np.where((np_points == pt1).all(axis=1))
-        index_pt1 = extract_index_nparray(index_pt1)
-
-        index_pt2 = np.where((np_points == pt2).all(axis=1))
-        index_pt2 = extract_index_nparray(index_pt2)
-
-        index_pt3 = np.where((np_points == pt3).all(axis=1))
-        index_pt3 = extract_index_nparray(index_pt3)
-
-        if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
-            triangle = [index_pt1, index_pt2, index_pt3]
-            delaunayTri.append(triangle)
-    return delaunayTri
-
-
-# Warps and alpha blends triangular regions from img1 and img2 to img
-def warpTriangle(img1, img2, t1, t2):
-    # Find bounding rectangle for each triangle
-    r1 = cv2.boundingRect(np.float32([t1]))
-    r2 = cv2.boundingRect(np.float32([t2]))
-
-    # Offset points by left top corner of the respective rectangles
-    t1Rect = []
-    t2Rect = []
-    t2RectInt = []
-
-    # todo why here is 3
-    for i in range(0, 3):
-        t1Rect.append(((t1[i][0] - r1[0]), (t1[i][1] - r1[1])))
-        t2Rect.append(((t2[i][0] - r2[0]), (t2[i][1] - r2[1])))
-        t2RectInt.append(((t2[i][0] - r2[0]), (t2[i][1] - r2[1])))
-
-    # Get mask by filling triangle
-    mask = np.zeros((r2[3], r2[2], 3), dtype=np.float32)
-    cv2.fillConvexPoly(mask, np.int32(t2RectInt), (1.0, 1.0, 1.0), 16, 0);
-
-    # Apply warpImage to small rectangular patches
-    img1Rect = img1[r1[1]:r1[1] + r1[3], r1[0]:r1[0] + r1[2]]
-    # img2Rect = np.zeros((r2[3], r2[2]), dtype = img1Rect.dtype)
-
-    size = (r2[2], r2[3])
-
-    img2Rect = applyAffineTransform(img1Rect, t1Rect, t2Rect, size)
-
-    img2Rect = img2Rect * mask
-
-    img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] * (
-            (1.0, 1.0, 1.0) - mask)
-
-    img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] = img2[r2[1]:r2[1] + r2[3], r2[0]:r2[0] + r2[2]] + img2Rect
 
 
 def get_landmark_points(shape, face_landmark_number):
@@ -192,7 +96,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
     # todo new staff
 
-    delaunayTri = calculateDelaunayTriangles(rect, hull2)
+    delaunayTri = calculate_delaunay_triangles(rect, hull2)
 
     if len(delaunayTri) == 0:
         return None
@@ -209,7 +113,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
             t2.append(hull2[delaunayTri[i][j]])
 
         # warp Triangle
-        warpTriangle(img_ref, img1Warped, t1, t2)
+        warp_triangle(img_ref, img1Warped, t1, t2)
 
     # Calculate Mask
     hull8U = []
@@ -231,7 +135,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
     # todo =================================================== refactor
     img1Warped = np.copy(img_ref)
-    delaunayTri = calculateDelaunayTriangles(rect, hull1)
+    delaunayTri = calculate_delaunay_triangles(rect, hull1)
 
     if len(delaunayTri) == 0:
         return None
@@ -247,7 +151,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
             t2.append(hull1[delaunayTri[i][j]])
 
         # warp Triangle
-        warpTriangle(img_ref, img1Warped, t1, t2)
+        warp_triangle(img_ref, img1Warped, t1, t2)
 
     # Calculate Mask
     hull8U = []
