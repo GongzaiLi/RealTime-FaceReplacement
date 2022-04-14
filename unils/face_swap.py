@@ -44,6 +44,23 @@ def get_face_shape(predictor, gray, face, face_landmark_number):
     return shape, points
 
 
+def get_convex_hull(img_ref, points1, points2):
+    # hull done
+    hull1 = []
+    hull2 = []
+
+    hull_index = cv2.convexHull(np.array(points2, np.int32), returnPoints=False)
+    for i in range(0, len(hull_index)):
+        hull1.append(points1[int(hull_index[i])])
+        hull2.append(points2[int(hull_index[i])])
+
+    # Find delanauy traingulation for convex hull points
+    size_img = img_ref.shape
+    rect = (0, 0, size_img[1], size_img[0])
+
+    return hull1, hull2, rect
+
+
 def face_swap(img_ref, detector, predictor, face_landmark_number):
     # color set
     gray = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
@@ -70,19 +87,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
         return None
     shape2, points2 = face2_shape
 
-    # hull done
-    hull1 = []
-    hull2 = []
-
-    hullIndex = cv2.convexHull(np.array(points2, np.int32), returnPoints=False)
-    for i in range(0, len(hullIndex)):
-        hull1.append(points1[int(hullIndex[i])])
-        hull2.append(points2[int(hullIndex[i])])
-
-    # Find delanauy traingulation for convex hull points
-    sizeImg2 = img_ref.shape
-    #               height      weight
-    rect = (0, 0, sizeImg2[1], sizeImg2[0])
+    hull1, hull2, rect = get_convex_hull(img_ref, points1, points2)
 
     delaunayTri = calculate_delaunay_triangles(rect, hull2)
 
