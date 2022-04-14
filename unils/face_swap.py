@@ -19,19 +19,6 @@ def is_out_of_image_points(points, img_wight, img_height):
     return False
 
 
-def rectContains(rect, point):
-    # Check if a point is inside a rectangle
-    if point[0] < rect[0]:
-        return False
-    elif point[1] < rect[1]:
-        return False
-    elif point[0] > rect[0] + rect[2]:
-        return False
-    elif point[1] > rect[1] + rect[3]:
-        return False
-    return True
-
-
 def get_landmark_points(shape, face_landmark_number):
     landmarks_points = []
     for n in range(0, face_landmark_number):
@@ -53,7 +40,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     if is_out_of_image(faces, gray1.shape[1], gray1.shape[0]):
         return None
 
-    img1Warped = np.copy(img_ref)  # todo ===================
+    img1_warped = np.copy(img_ref)  # todo ===================
 
     # face 1
     shape1 = predictor(gray1, faces[0])
@@ -113,7 +100,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
             t2.append(hull2[delaunayTri[i][j]])
 
         # warp Triangle
-        warp_triangle(img_ref, img1Warped, t1, t2)
+        warp_triangle(img_ref, img1_warped, t1, t2)
 
     # Calculate Mask
     hull8U = []
@@ -131,7 +118,7 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     center = ((r[0] + int(r[2] / 2), r[1] + int(r[3] / 2)))
 
     # Clone seamlessly.
-    output = cv2.seamlessClone(np.uint8(img1Warped), img_ref, mask, center, cv2.NORMAL_CLONE)
+    output = cv2.seamlessClone(np.uint8(img1_warped), img_ref, mask, center, cv2.NORMAL_CLONE)
 
     # todo =================================================== refactor
     img1Warped = np.copy(img_ref)
