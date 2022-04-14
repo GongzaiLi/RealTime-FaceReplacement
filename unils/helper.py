@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 def check_is_out_of_image(rects, img_wight, img_height):
     for rect in rects:
         x, y, w, h = rect.left(), rect.top(), rect.width(), rect.height()
@@ -31,7 +32,8 @@ def get_face_shape(predictor, gray, face, face_landmark_number):
     # points1 = face_utils.shape_to_np(shape1)  # type is an array of arrays
     landmarks_points = get_landmark_points(shape, face_landmark_number)
 
-    if check_is_out_of_image_points(landmarks_points, gray.shape[1], gray.shape[0]):  # check if points are inside the image
+    if check_is_out_of_image_points(landmarks_points, gray.shape[1],
+                                    gray.shape[0]):  # check if points are inside the image
         return None
 
     # need to covert to a list of tuple
@@ -56,4 +58,3 @@ def get_convex_hull(img_ref, points1, points2):
     rect = (0, 0, size_img[1], size_img[0])
 
     return hull1, hull2, rect
-

@@ -7,9 +7,8 @@ from unils.calculate_mask import get_calculate_mask
 
 
 def face_swap(img_ref, detector, predictor, face_landmark_number):
-    # color set
+
     gray = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
-    # detect faces in the grayscale frame
     faces = detector(gray, 0)
 
     if len(faces) < 2:
@@ -34,23 +33,22 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
     hull1, hull2, rect = hf.get_convex_hull(img_ref, points1, points2)
 
+    # face 2
     delaunay_triangles = calculate_delaunay_triangles(rect, hull2)
-
     if len(delaunay_triangles) == 0:
         return None
 
     affine_transformation(hull1, hull2, delaunay_triangles, img_ref, img_warped)
-
     output = get_calculate_mask(hull2, hull2, img_ref, img_warped)
 
     img_warped = np.copy(img_ref)
-    delaunay_triangles = calculate_delaunay_triangles(rect, hull1)
 
+    # face 1
+    delaunay_triangles = calculate_delaunay_triangles(rect, hull1)
     if len(delaunay_triangles) == 0:
         return None
 
     affine_transformation(hull2, hull1, delaunay_triangles, img_ref, img_warped)
-
     output = get_calculate_mask(hull1, hull2, output, img_warped)
 
     return output
