@@ -28,46 +28,47 @@ def get_landmark_points(shape, face_landmark_number):
     return landmarks_points
 
 
-def face_swap(img_ref, detector, predictor, face_landmark_number):
-    # color set
-    gray1 = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
-    # detect faces in the grayscale frame
-    faces = detector(gray1, 0)
-
-    if len(faces) < 2:
-        return None
-
-    if is_out_of_image(faces, gray1.shape[1], gray1.shape[0]):
-        return None
-
-    img1_warped = np.copy(img_ref)
-
-    # todo refactor here 1 =================================================================================================
-    # face 1
-    shape1 = predictor(gray1, faces[0])
+def get_face_shape(predictor, gray, face, face_landmark_number):
+    shape = predictor(gray, face)
 
     # points1 = face_utils.shape_to_np(shape1)  # type is an array of arrays
-    landmarks_1_points = get_landmark_points(shape1, face_landmark_number)
+    landmarks_points = get_landmark_points(shape, face_landmark_number)
 
-    if is_out_of_image_points(landmarks_1_points, gray1.shape[1], gray1.shape[0]):
+    if is_out_of_image_points(landmarks_points, gray.shape[1], gray.shape[0]):  # check if points are inside the image
         return None
 
     # need to covert to a list of tuple
     # map in python3 is return an iterable || map in python2 is return a list
-    points1 = list(map(tuple, landmarks_1_points))
+    points = list(map(tuple, landmarks_points))
+
+    return shape, points
 
 
-    # face 2
-    shape2 = predictor(gray1, faces[1])
-    # points2 = face_utils.shape_to_np(shape2)
-    landmarks_2_points = get_landmark_points(shape2, face_landmark_number)
+def face_swap(img_ref, detector, predictor, face_landmark_number):
+    # color set
+    gray = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
+    # detect faces in the grayscale frame
+    faces = detector(gray, 0)
 
-    if is_out_of_image_points(landmarks_2_points, gray1.shape[1],
-                              gray1.shape[0]):  # check if points are inside the image
+    if len(faces) < 2:
         return None
 
-    points2 = list(map(tuple, landmarks_2_points))
-    # todo refactor here 1 =================================================================================================
+    if is_out_of_image(faces, gray.shape[1], gray.shape[0]):
+        return None
+
+    img1_warped = np.copy(img_ref)
+
+    # face 1
+    face1_shape = get_face_shape(predictor, gray, faces[0], face_landmark_number)
+    if face1_shape is None:
+        return None
+    shape1, points1 = face1_shape
+
+    # face 2
+    face2_shape = get_face_shape(predictor, gray, faces[1], face_landmark_number)
+    if face2_shape is None:
+        return None
+    shape2, points2 = face2_shape
 
     # hull done
     hull1 = []
@@ -88,7 +89,6 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     if len(delaunayTri) == 0:
         return None
 
-
     # todo refactor here 2 =================================================================================================
     for i in range(0, len(delaunayTri)):
         t1 = []
@@ -101,8 +101,6 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
         # warp Triangle
         warp_triangle(img_ref, img1_warped, t1, t2)
-
-
 
     # Calculate Mask
     hull8U = []
@@ -123,15 +121,11 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
     output = cv2.seamlessClone(np.uint8(img1_warped), img_ref, mask, center, cv2.NORMAL_CLONE)
     # todo refactor here 2 =================================================================================================
 
-
     img1_warped = np.copy(img_ref)
     delaunayTri = calculate_delaunay_triangles(rect, hull1)
 
-
-
     if len(delaunayTri) == 0:
         return None
-
 
     # todo refactor here 2 =================================================================================================
     for i in range(0, len(delaunayTri)):
@@ -145,9 +139,6 @@ def face_swap(img_ref, detector, predictor, face_landmark_number):
 
         # warp Triangle
         warp_triangle(img_ref, img1_warped, t1, t2)
-
-
-
 
     # Calculate Mask
     hull8U = []
