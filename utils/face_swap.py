@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-from unils.delaunay_triangulation import calculate_delaunay_triangles
-from unils.warp_trianglation import affine_transformation
-import unils.helper as hf
-from unils.calculate_mask import get_calculate_mask
+from utils.delaunay_triangulation import calculate_delaunay_triangles
+from utils.warp_trianglation import affine_transformation
+import utils.helper as hf
+from utils.calculate_mask import get_calculate_mask
 
 
 def face_swap(img_ref, detector, predictor, face_landmark_number):
