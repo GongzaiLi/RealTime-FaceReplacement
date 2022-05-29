@@ -16,6 +16,9 @@ def apply_affine_transform(src, src_tri, dst_tri, size):
 
 
 def warp_triangle(face1, face2, triangle1, triangle2):
+    """
+    warp the new face to old face
+    """
     # Find bounding rectangle for each triangle
     r1 = cv2.boundingRect(np.float32([triangle1]))
     r2 = cv2.boundingRect(np.float32([triangle2]))

@@ -11,6 +11,9 @@ def extract_index_nparray(nparray):
 
 
 def calculate_delaunay_triangles(rect, points):
+    """
+    create delaunay triangles in a face
+    """
     # create sub div
     sub_div = cv2.Subdiv2D(rect)
     sub_div.insert(points)

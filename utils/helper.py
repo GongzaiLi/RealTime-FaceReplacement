@@ -3,6 +3,9 @@ import numpy as np
 
 
 def check_is_out_of_image(rects, img_wight, img_height):
+    """
+    check the faces is in the webcam
+    """
     for rect in rects:
         x, y, w, h = rect.left(), rect.top(), rect.width(), rect.height()
         if x < 0 or y < 0 or (y + h) >= img_height or (x + w) >= img_wight:
@@ -11,6 +14,9 @@ def check_is_out_of_image(rects, img_wight, img_height):
 
 
 def check_is_out_of_image_points(points, img_wight, img_height):
+    """
+    check the faces is in the webcam
+    """
     for x, y in points:
         if x < 0 or y < 0 or y >= img_height or x >= img_wight:
             return True
@@ -18,6 +24,9 @@ def check_is_out_of_image_points(points, img_wight, img_height):
 
 
 def get_landmark_points(shape, face_landmark_number):
+    """
+    get facial landmark points
+    """
     landmarks_points = []
     for n in range(0, face_landmark_number):
         x = shape.part(n).x
@@ -27,6 +36,10 @@ def get_landmark_points(shape, face_landmark_number):
 
 
 def get_face_shape(predictor, gray, face, face_landmark_number):
+    """
+    get face shape
+    :return face shape and face points
+    """
     shape = predictor(gray, face)
 
     # points1 = face_utils.shape_to_np(shape1)  # type is an array of arrays
@@ -44,6 +57,9 @@ def get_face_shape(predictor, gray, face, face_landmark_number):
 
 
 def get_convex_hull(img_ref, points1, points2):
+    """
+    create convex hull in face
+    """
     # hull done
     hull1 = []
     hull2 = []

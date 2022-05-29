@@ -3,6 +3,9 @@ import numpy as np
 
 
 def get_calculate_mask(hull, hull_index, img_ref, img_warped):
+    """
+    calculate face mask
+    """
     # Calculate Mask
     hull_points = []
     for i in range(0, len(hull_index)):

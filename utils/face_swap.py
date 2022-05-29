@@ -7,9 +7,17 @@ from utils.calculate_mask import get_calculate_mask
 
 
 def face_swap(img_ref, detector, predictor, face_landmark_number):
+    """
+    face swap function which is swap the face from dlib
+    :param img_ref: image from webcam
+    :param detector: dlib face detector
+    :param predictor: predictor model
+    :param face_landmark_number: number of face landmark
+    :return: new faces
+    """
 
     gray = cv2.cvtColor(img_ref, cv2.COLOR_BGR2GRAY)
-    faces = detector(gray, 0)
+    faces = detector(gray, 0)   # find faces from webcam
 
     if len(faces) < 2:
         return None
